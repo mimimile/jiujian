@@ -44,6 +44,17 @@ export type ClaudeEvent =
     }
   | { type: 'error'; runId: RunId; message: string; code: ClaudeErrorCode }
 
+/** 实时行情（行情头用，main 直拉 stock-sdk） */
+export interface Quote {
+  name: string
+  /** 现价；基金为净值 nav */
+  price: number
+  change: number
+  /** 涨跌幅%；基金可能为 null（接口不直接给） */
+  changePercent: number | null
+  isFund?: boolean
+}
+
 /** K 线蜡烛（喂给 KLineChart） */
 export interface Candle {
   timestamp: number
@@ -68,5 +79,7 @@ export interface JiuJianApi {
   stock: {
     /** 图表用日K（main 直接走 stock-sdk 拉取，不经 claude） */
     kline(req: { symbol: string; market: Market }): Promise<Candle[]>
+    /** 实时行情（行情头用） */
+    quote(req: { symbol: string; market: Market }): Promise<Quote | null>
   }
 }

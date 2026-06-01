@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { DetectResult, Market } from '@shared/types'
 import { StatusBanner } from './components/StatusBanner'
+import { QuoteHeader } from './components/QuoteHeader'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { KLineChartPanel } from './components/chart/KLineChartPanel'
 import { useClaudeStream } from './hooks/useClaudeStream'
@@ -88,6 +89,10 @@ export default function App(): JSX.Element {
             分析
           </button>
         )}
+      </div>
+
+      <div className="px-1">
+        <QuoteHeader symbol={symbol} market={market} />
       </div>
 
       <main className="grid min-h-0 flex-1 grid-cols-2 gap-3">

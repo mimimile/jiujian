@@ -36,6 +36,10 @@ export function KLineChartPanel({ symbol, market }: Props): JSX.Element {
         }
       }
     })
+    // 指标：MA 叠加主图 candle_pane；VOL / MACD 各自副图
+    chart?.createIndicator('MA', true, { id: 'candle_pane' })
+    chart?.createIndicator('VOL')
+    chart?.createIndicator('MACD')
     return () => {
       if (el) dispose(el)
       chartRef.current = null

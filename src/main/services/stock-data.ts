@@ -1,5 +1,5 @@
 import { StockSDK } from 'stock-sdk'
-import type { Candle, Market } from '@shared/types'
+import type { Candle, Market, Quote } from '@shared/types'
 
 let sdk: StockSDK | null = null
 
@@ -52,4 +52,34 @@ export async function fetchKline(symbol: string, market: Market): Promise<Candle
       break
   }
   return raw.map(toCandle).filter((c): c is Candle => c !== null)
+}
+
+/**
+ * 实时行情（行情头）。A/HK/US 用各自 quote 接口；基金用 getFundQuotes（净值 nav 当价、按 change 推涨跌幅）。
+ */
+export async function fetchQuote(symbol: string, market: Market): Promise<Quote | null> {
+  const client = getSdk()
+  const code = symbol.trim()
+  if (market === 'FUND') {
+    const q = (await client.getFundQuotes([code]))[0]
+    if (!q) return null
+    const prev = q.nav - q.change
+    const changePercent = prev ? (q.change / prev) * 100 : null
+    return { name: q.name, price: q.nav, change: q.change, changePercent, isFund: true }
+  }
+  let q: { name: string; price: number; change: number; changePercent: number } | undefined
+  switch (market) {
+    case 'HK':
+      q = (await client.getHKQuotes([code]))[0]
+      break
+    case 'US':
+      q = (await client.getUSQuotes([code]))[0]
+      break
+    case 'A':
+    default:
+      q = (await client.getSimpleQuotes([code]))[0]
+      break
+  }
+  if (!q) return null
+  return { name: q.name, price: q.price, change: q.change, changePercent: q.changePercent }
 }

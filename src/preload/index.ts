@@ -20,7 +20,8 @@ const api: JiuJianApi = {
     }
   },
   stock: {
-    kline: (req: { symbol: string; market: Market }) => ipcRenderer.invoke(IPC.STOCK_KLINE, req)
+    kline: (req: { symbol: string; market: Market }) => ipcRenderer.invoke(IPC.STOCK_KLINE, req),
+    quote: (req: { symbol: string; market: Market }) => ipcRenderer.invoke(IPC.STOCK_QUOTE, req)
   }
 }
 

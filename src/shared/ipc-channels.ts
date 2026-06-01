@@ -10,7 +10,9 @@ export const IPC = {
   /** main -> renderer (send)：流式分析事件 */
   CLAUDE_EVENT: 'claude:event',
   /** renderer -> main (invoke)：图表用 K线（main 直接走 stock-sdk 拉取） */
-  STOCK_KLINE: 'stock:kline'
+  STOCK_KLINE: 'stock:kline',
+  /** renderer -> main (invoke)：实时行情（行情头用） */
+  STOCK_QUOTE: 'stock:quote'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

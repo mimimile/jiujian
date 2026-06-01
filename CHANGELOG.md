@@ -22,6 +22,9 @@
 - 加 `stock-sdk@1.10.0` 直接依赖（图表直拉）。
 - 验证：typecheck + electron-vite build 全绿；stock-sdk 实拉 5929 根日K；claude 探测实测解析到 claude.sh（处理 alias/PATH/.zshrc 横幅噪音）。
 
+- **M2 增量（单股深度分析）**：实时行情头（stock-sdk 直拉 quote，A/HK/US/FUND，红涨绿跌）；KLineChart 加指标（MA 叠加主图 + VOL/MACD 副图）。
+- git 初始化 + 提交 M1 骨架（gitignore 含 token 的 `.mcp.json` 与 `.specstory/` 对话日志）。
+
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。
 - ⚠️ ToS：官方明禁第三方通过用户 Pro/Max 凭据路由请求（商业/公开场景的红线）；个人非商业自用属"ordinary individual usage"，不触发。
