@@ -63,9 +63,8 @@ export async function fetchQuote(symbol: string, market: Market): Promise<Quote 
   if (market === 'FUND') {
     const q = (await client.getFundQuotes([code]))[0]
     if (!q) return null
-    const prev = q.nav - q.change
-    const changePercent = prev ? (q.change / prev) * 100 : null
-    return { name: q.name, price: q.nav, change: q.change, changePercent, isFund: true }
+    // FundQuote.change 语义存疑（疑非当日涨跌额），不伪造涨跌幅，置 null，只展示净值 + change 原值
+    return { name: q.name, price: q.nav, change: q.change, changePercent: null, isFund: true }
   }
   let q: { name: string; price: number; change: number; changePercent: number } | undefined
   switch (market) {

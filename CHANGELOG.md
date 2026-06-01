@@ -24,6 +24,8 @@
 
 - **M2 增量（单股深度分析）**：实时行情头（stock-sdk 直拉 quote，A/HK/US/FUND，红涨绿跌）；KLineChart 加指标（MA 叠加主图 + VOL/MACD 副图）；分析报告 markdown 渲染（react-markdown + 暗色样式，替换纯文本）。
 - git 初始化 + 提交 M1 骨架（gitignore 含 token 的 `.mcp.json` 与 `.specstory/` 对话日志）。
+- **M3 增量**：自选股 watchlist（localStorage 持久化，侧栏列表/增删/点选加载，工具栏「☆ 自选」切换）。
+- 修：FUND 涨跌幅不再伪造（SDK `change` 语义存疑）→ 置 null，只展示净值 + 原始 change。
 
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。

@@ -3,8 +3,10 @@ import type { DetectResult, Market } from '@shared/types'
 import { StatusBanner } from './components/StatusBanner'
 import { QuoteHeader } from './components/QuoteHeader'
 import { AnalysisPanel } from './components/AnalysisPanel'
+import { Watchlist } from './components/Watchlist'
 import { KLineChartPanel } from './components/chart/KLineChartPanel'
 import { useClaudeStream } from './hooks/useClaudeStream'
+import { useWatchlist } from './hooks/useWatchlist'
 import { buildAnalysisPrompt, MARKET_LABEL } from './lib/prompt'
 
 const MARKETS: Market[] = ['A', 'HK', 'US', 'FUND']
@@ -18,6 +20,9 @@ export default function App(): JSX.Element {
   const [symbol, setSymbol] = useState('sh600519')
   const [market, setMarket] = useState<Market>('A')
   const { state, run, cancel } = useClaudeStream()
+  const wl = useWatchlist()
+  const trimmed = symbol.trim()
+  const watched = wl.has(trimmed, market)
 
   const runDetect = useCallback(async () => {
     setDetecting(true)
@@ -89,16 +94,34 @@ export default function App(): JSX.Element {
             分析
           </button>
         )}
+        <button
+          onClick={() => (watched ? wl.remove(trimmed, market) : wl.add({ symbol: trimmed, market }))}
+          disabled={!trimmed}
+          className="rounded border border-[var(--color-line)] px-3 py-1.5 text-sm text-gray-300 hover:bg-[var(--color-panel-2)] disabled:opacity-40"
+        >
+          {watched ? '★ 已自选' : '☆ 自选'}
+        </button>
       </div>
 
       <div className="px-1">
         <QuoteHeader symbol={symbol} market={market} />
       </div>
 
-      <main className="grid min-h-0 flex-1 grid-cols-2 gap-3">
-        <KLineChartPanel symbol={symbol} market={market} />
-        <AnalysisPanel state={state} />
-      </main>
+      <div className="flex min-h-0 flex-1 gap-3">
+        <Watchlist
+          items={wl.items}
+          current={{ symbol: trimmed, market }}
+          onSelect={(it) => {
+            setSymbol(it.symbol)
+            setMarket(it.market)
+          }}
+          onRemove={wl.remove}
+        />
+        <main className="grid min-h-0 flex-1 grid-cols-2 gap-3">
+          <KLineChartPanel symbol={symbol} market={market} />
+          <AnalysisPanel state={state} />
+        </main>
+      </div>
     </div>
   )
 }
