@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { DetectResult, RunRequest } from '@shared/types'
 import { resolveClaudeBinary } from '../path-resolver'
+import { allowedToolsFor } from '../analysis-tools'
 import type { AuthProvider, SpawnPlan } from './auth-provider'
 
 const execFileAsync = promisify(execFile)
@@ -79,10 +80,9 @@ export class SubscriptionCliProvider implements AuthProvider {
       '--strict-mcp-config',
       '--mcp-config',
       mcpConfigPath,
-      // 放行 stock-sdk MCP 全部工具 + Read + ToolSearch（~70 工具时 CC 可能把 MCP 工具收进 ToolSearch）。
-      // 注：首次真实运行时如遇工具被拦，可能需按实际命名空间微调（见 docs/研究/地基调研.md）。
+      // 按市场精选工具放行（不用 ToolSearch）。实测降本 ~43%，详见 analysis-tools.ts。
       '--allowedTools',
-      'mcp__stock-sdk Read ToolSearch'
+      allowedToolsFor(req.market ?? 'A')
     ]
 
     return {
