@@ -3,7 +3,7 @@ import { promisify } from 'node:util'
 import type { DetectResult, RunRequest } from '@shared/types'
 import { resolveClaudeBinary } from '../path-resolver'
 import { allowedToolsFor } from '../analysis-tools'
-import type { AuthProvider, SpawnPlan } from './auth-provider'
+import type { AuthProvider, BuildOptions, SpawnPlan } from './auth-provider'
 
 const execFileAsync = promisify(execFile)
 
@@ -66,7 +66,7 @@ export class SubscriptionCliProvider implements AuthProvider {
     return { found: true, binaryPath, version, loggedIn, authMethod, plan }
   }
 
-  async buildSpawnPlan(req: RunRequest, mcpConfigPath: string): Promise<SpawnPlan> {
+  async buildSpawnPlan(req: RunRequest, opts?: BuildOptions): Promise<SpawnPlan> {
     const binaryPath = await resolveClaudeBinary(this.userOverride)
     if (!binaryPath) throw new Error('未找到 claude')
 
@@ -75,15 +75,19 @@ export class SubscriptionCliProvider implements AuthProvider {
       '--output-format',
       'stream-json',
       '--verbose',
-      '--include-partial-messages',
-      // 只加载我们指定的 MCP，屏蔽用户机器上的其它 MCP server
-      '--strict-mcp-config',
-      '--mcp-config',
-      mcpConfigPath,
-      // 按市场精选工具放行（不用 ToolSearch）。实测降本 ~43%，详见 analysis-tools.ts。
-      '--allowedTools',
-      allowedToolsFor(req.market ?? 'A')
+      '--include-partial-messages'
     ]
+    // 默认路径：数据已预注入 prompt → 不挂 MCP、不放行工具（最省）。
+    // 退回路径：未能预取数据时挂 MCP，按市场精选工具放行（不用 ToolSearch，详见 analysis-tools.ts）。
+    if (opts?.mcpConfigPath) {
+      args.push(
+        '--strict-mcp-config',
+        '--mcp-config',
+        opts.mcpConfigPath,
+        '--allowedTools',
+        allowedToolsFor(req.market ?? 'A')
+      )
+    }
 
     return {
       binaryPath,

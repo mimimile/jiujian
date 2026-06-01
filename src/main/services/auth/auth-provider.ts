@@ -9,6 +9,11 @@ export interface SpawnPlan {
   env: NodeJS.ProcessEnv
 }
 
+export interface BuildOptions {
+  /** 提供则挂 stock-sdk MCP；不提供则无 MCP（数据已预注入 prompt，claude 直接分析更省钱） */
+  mcpConfigPath?: string
+}
+
 /**
  * 可插拔鉴权 provider。D10：当前只实现订阅 CLI（SubscriptionCliProvider）。
  * 未来要支持 API key / Agent SDK，只需新增一个实现，编排器与 IPC 层不变。
@@ -18,5 +23,5 @@ export interface AuthProvider {
   /** 探测可用性与登录态 */
   detect(): Promise<DetectResult>
   /** 为一次运行构造 spawn 计划 */
-  buildSpawnPlan(req: RunRequest, mcpConfigPath: string): Promise<SpawnPlan>
+  buildSpawnPlan(req: RunRequest, opts?: BuildOptions): Promise<SpawnPlan>
 }

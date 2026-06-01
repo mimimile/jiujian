@@ -6,6 +6,7 @@ import { IPC } from '@shared/ipc-channels'
 import type { ClaudeEvent, ClaudeErrorCode, RunId, RunRequest } from '@shared/types'
 import type { AuthProvider } from './auth/auth-provider'
 import { writeStockMcpConfig } from './mcp-config'
+import { buildAnalysisContext } from './analysis-context'
 
 interface ActiveRun {
   child: ChildProcess
@@ -37,9 +38,25 @@ export class ClaudeOrchestrator {
       if (!win.isDestroyed()) win.webContents.send(IPC.CLAUDE_EVENT, e)
     }
 
+    // 默认：本地预取紧凑数据注入 prompt，claude 无 MCP 直接分析（省钱，实测 $1.5→预计 $0.3-0.5）。
+    // 退回：无 symbol/market 或预取失败时，挂 MCP 让 claude 自己拉。
+    let finalPrompt = req.prompt
+    let mcpConfigPath: string | undefined
+    try {
+      if (req.symbol && req.market) {
+        const ctx = await buildAnalysisContext(req.symbol, req.market)
+        finalPrompt = `${ctx}\n\n---\n\n${req.prompt}\n\n（以上数据已由本地预取，请直接基于它分析，不要调用任何工具。）`
+      } else {
+        mcpConfigPath = this.getMcpConfig()
+      }
+    } catch {
+      mcpConfigPath = this.getMcpConfig()
+      finalPrompt = req.prompt
+    }
+
     let plan
     try {
-      plan = await this.provider.buildSpawnPlan(req, this.getMcpConfig())
+      plan = await this.provider.buildSpawnPlan({ ...req, prompt: finalPrompt }, { mcpConfigPath })
     } catch (err) {
       emit({ type: 'error', runId, message: errMsg(err), code: 'NOT_FOUND' })
       return runId

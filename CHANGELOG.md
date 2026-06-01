@@ -22,6 +22,8 @@
 - 加 `stock-sdk@1.10.0` 直接依赖（图表直拉）。
 - 验证：typecheck + electron-vite build 全绿；stock-sdk 实拉 5929 根日K；claude 探测实测解析到 claude.sh（处理 alias/PATH/.zshrc 横幅噪音）。
 
+- **🎯 成本重构：数据预注入**（降本 ~91%，$1.5→$0.128/次）。main 本地用 stock-sdk + addIndicators 算好 MA/MACD/BOLL/KDJ/RSI + 资金流，拼紧凑数据块注入 prompt，claude 无 MCP、1 turn 直接分析。`analysis-context.ts` + orchestrator 默认注入/预取失败退回 MCP + provider MCP 可选。
+- 成本优化前置：按市场窄化 MCP allowedTools（退回路径用，简单查询降 43%）。
 - **M2 增量（单股深度分析）**：实时行情头（stock-sdk 直拉 quote，A/HK/US/FUND，红涨绿跌）；KLineChart 加指标（MA 叠加主图 + VOL/MACD 副图）；分析报告 markdown 渲染（react-markdown + 暗色样式，替换纯文本）。
 - git 初始化 + 提交 M1 骨架（gitignore 含 token 的 `.mcp.json` 与 `.specstory/` 对话日志）。
 - **M3 增量**：自选股 watchlist（localStorage 持久化，侧栏列表/增删/点选加载，工具栏「☆ 自选」切换）。

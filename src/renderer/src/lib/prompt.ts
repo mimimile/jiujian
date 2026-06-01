@@ -12,12 +12,12 @@ export const MARKET_LABEL: Record<Market, string> = {
  */
 export function buildAnalysisPrompt(symbol: string, market: Market): string {
   const code = symbol.trim()
+  // 数据由 main 进程本地预取后注入到 prompt 前面（见 analysis-context.ts），这里只给分析指令。
   return [
-    `请分析${MARKET_LABEL[market]}标的「${code}」。`,
-    '使用 stock-sdk MCP 工具拉取该标的的最新行情、日K线与常用技术指标（MA/MACD/KDJ/RSI/BOLL）、以及资金流向数据，然后给出：',
+    `请对${MARKET_LABEL[market]}标的「${code}」做深度分析，给出：`,
     '1. 趋势研判（短中期）；',
     '2. 关键支撑位 / 压力位；',
-    '3. 量价与资金流解读；',
+    '3. 量价与资金流解读（结合给定的技术指标 MA/MACD/KDJ/RSI/BOLL 与资金流数据）；',
     '4. 主要风险提示。',
     '用中文、分点、简明。最后注明数据可能有数十秒到分钟级延迟，本分析不构成投资建议。'
   ].join('\n')
