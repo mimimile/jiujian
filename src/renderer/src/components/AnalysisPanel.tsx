@@ -1,3 +1,4 @@
+import Markdown from 'react-markdown'
 import type { ClaudeErrorCode } from '@shared/types'
 import type { StreamState } from '../hooks/useClaudeStream'
 
@@ -42,9 +43,9 @@ export function AnalysisPanel({ state }: { state: StreamState }): JSX.Element {
             </pre>
           </div>
         ) : text ? (
-          <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-gray-100">
-            {text}
-          </pre>
+          <div className="prose-jj text-sm leading-relaxed text-gray-100">
+            <Markdown>{text}</Markdown>
+          </div>
         ) : (
           <div className="grid h-full place-items-center text-sm text-gray-500">
             {running ? '正在请求 Claude…' : '输入股票代码，点击「分析」'}

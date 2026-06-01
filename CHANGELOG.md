@@ -22,7 +22,7 @@
 - 加 `stock-sdk@1.10.0` 直接依赖（图表直拉）。
 - 验证：typecheck + electron-vite build 全绿；stock-sdk 实拉 5929 根日K；claude 探测实测解析到 claude.sh（处理 alias/PATH/.zshrc 横幅噪音）。
 
-- **M2 增量（单股深度分析）**：实时行情头（stock-sdk 直拉 quote，A/HK/US/FUND，红涨绿跌）；KLineChart 加指标（MA 叠加主图 + VOL/MACD 副图）。
+- **M2 增量（单股深度分析）**：实时行情头（stock-sdk 直拉 quote，A/HK/US/FUND，红涨绿跌）；KLineChart 加指标（MA 叠加主图 + VOL/MACD 副图）；分析报告 markdown 渲染（react-markdown + 暗色样式，替换纯文本）。
 - git 初始化 + 提交 M1 骨架（gitignore 含 token 的 `.mcp.json` 与 `.specstory/` 对话日志）。
 
 ### 记录（重要事实）
