@@ -6,6 +6,8 @@
 
 <sub>An Electron desktop app that turns your own Claude Code subscription into an AI stock analyst.</sub>
 
+[English README](README.en.md) · [License](LICENSE)
+
 ![license](https://img.shields.io/badge/license-MIT-e7b53c) ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-24262d) ![electron](https://img.shields.io/badge/Electron-35-24262d) ![cost](https://img.shields.io/badge/单次分析-~%240.1-16b877)
 
 ![韭见 截图](screenshots/hero.png)
