@@ -12,7 +12,7 @@ const PROD_CSP =
   "frame-ancestors 'none'; " +
   "base-uri 'none'"
 
-export function createWindow(): BrowserWindow {
+export function createWindow(startHidden = false): BrowserWindow {
   const devUrl = process.env['ELECTRON_RENDERER_URL']
   const isDev = Boolean(devUrl)
 
@@ -34,7 +34,9 @@ export function createWindow(): BrowserWindow {
     }
   })
 
-  win.on('ready-to-show', () => win.show())
+  win.on('ready-to-show', () => {
+    if (!startHidden) win.show()
+  })
 
   // 外链一律用系统浏览器打开，拒绝应用内新窗口
   win.webContents.setWindowOpenHandler(({ url }) => {

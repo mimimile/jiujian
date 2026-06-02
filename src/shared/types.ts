@@ -69,6 +69,12 @@ export interface Candle {
 export interface JiuJianApi {
   system: {
     detect(): Promise<DetectResult>
+    /** 设置后台常驻 + 开机自启，返回最终态 */
+    setBackgroundMode(enabled: boolean): Promise<boolean>
+    /** 读取后台常驻态 */
+    getBackgroundMode(): Promise<boolean>
+    /** 订阅 tray「立即复盘」触发，返回取消订阅函数 */
+    onTriggerRecap(cb: () => void): () => void
   }
   claude: {
     run(req: RunRequest): Promise<{ runId: RunId }>

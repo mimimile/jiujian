@@ -21,7 +21,10 @@ export function installDevMockIfNeeded(): void {
         loggedIn: true,
         authMethod: 'claude_subscription',
         plan: 'max'
-      })
+      }),
+      setBackgroundMode: async (v: boolean) => v,
+      getBackgroundMode: async () => false,
+      onTriggerRecap: () => () => {}
     },
     claude: {
       run: async () => {

@@ -3,6 +3,12 @@
 export const IPC = {
   /** renderer -> main (invoke)：探测 claude 环境 */
   SYSTEM_DETECT: 'system:detect',
+  /** renderer -> main (invoke)：设置后台常驻+开机自启，返回当前态 */
+  SYSTEM_SET_BG: 'system:setBackground',
+  /** renderer -> main (invoke)：读取后台常驻态 */
+  SYSTEM_GET_BG: 'system:getBackground',
+  /** main -> renderer (send)：tray「立即复盘」触发 */
+  SYSTEM_TRIGGER_RECAP: 'system:triggerRecap',
   /** renderer -> main (invoke)：发起一次分析，返回 { runId } */
   CLAUDE_RUN: 'claude:run',
   /** renderer -> main (invoke)：取消某次运行 */

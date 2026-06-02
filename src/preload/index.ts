@@ -6,7 +6,16 @@ import type { JiuJianApi, RunRequest, RunId, ClaudeEvent, Market } from '@shared
 // 绝不暴露 ipcRenderer / fs / child_process 给渲染层。
 const api: JiuJianApi = {
   system: {
-    detect: () => ipcRenderer.invoke(IPC.SYSTEM_DETECT)
+    detect: () => ipcRenderer.invoke(IPC.SYSTEM_DETECT),
+    setBackgroundMode: (enabled: boolean) => ipcRenderer.invoke(IPC.SYSTEM_SET_BG, enabled),
+    getBackgroundMode: () => ipcRenderer.invoke(IPC.SYSTEM_GET_BG),
+    onTriggerRecap: (cb: () => void) => {
+      const listener = (): void => cb()
+      ipcRenderer.on(IPC.SYSTEM_TRIGGER_RECAP, listener)
+      return () => {
+        ipcRenderer.removeListener(IPC.SYSTEM_TRIGGER_RECAP, listener)
+      }
+    }
   },
   claude: {
     run: (req: RunRequest) => ipcRenderer.invoke(IPC.CLAUDE_RUN, req),

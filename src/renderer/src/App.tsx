@@ -74,6 +74,25 @@ export default function App(): JSX.Element {
     }
   }, [state.running, state.runId, state.text, state.costUsd, history.add])
 
+  // 后台常驻 + 开机自启
+  const [bgMode, setBgMode] = useState(false)
+  useEffect(() => {
+    window.api.system.getBackgroundMode().then(setBgMode).catch(() => {})
+  }, [])
+  const toggleBg = useCallback(async (v: boolean) => {
+    try {
+      setBgMode(await window.api.system.setBackgroundMode(v))
+    } catch {
+      /* ignore */
+    }
+  }, [])
+  // tray「立即复盘」→ 触发复盘
+  useEffect(() => {
+    return window.api.system.onTriggerRecap(() => {
+      if (wl.items.length > 0) void doRecap(wl.items)
+    })
+  }, [wl.items, doRecap])
+
   const onAnalyze = (): void => {
     if (!trimmed) return
     lastMeta.current = { type: 'analysis', title: `${MARKET_LABEL[market]} ${trimmed.toUpperCase()}` }
@@ -157,6 +176,8 @@ export default function App(): JSX.Element {
           settings={auto.settings}
           setEnabled={auto.setEnabled}
           setTime={auto.setTime}
+          bgMode={bgMode}
+          setBgMode={toggleBg}
         />
         <StatusBanner detect={detect} loading={detecting} onRetry={() => void runDetect()} />
       </header>

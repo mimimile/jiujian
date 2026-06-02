@@ -9,6 +9,8 @@ export interface IpcDeps {
   provider: AuthProvider
   orchestrator: ClaudeOrchestrator
   getMainWindow: () => BrowserWindow | null
+  setBackgroundMode: (enabled: boolean) => boolean
+  getBackgroundMode: () => boolean
 }
 
 export function registerIpc(deps: IpcDeps): void {

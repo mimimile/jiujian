@@ -5,9 +5,17 @@ interface Props {
   settings: AutoRecapSettings
   setEnabled: (v: boolean) => void
   setTime: (t: string) => void
+  bgMode: boolean
+  setBgMode: (v: boolean) => void
 }
 
-export function SettingsPopover({ settings, setEnabled, setTime }: Props): JSX.Element {
+export function SettingsPopover({
+  settings,
+  setEnabled,
+  setTime,
+  bgMode,
+  setBgMode
+}: Props): JSX.Element {
   const [open, setOpen] = useState(false)
 
   return (
@@ -47,7 +55,21 @@ export function SettingsPopover({ settings, setEnabled, setTime }: Props): JSX.E
               />
             </div>
             <div className="cjk mt-2.5 leading-relaxed text-[10px] text-faint">
-              仅当应用保持开启时触发（周一~周五）。对全部自选股出一份复盘，每次约 $0.1，计入你的订阅额度。
+              触发时对全部自选股出一份复盘（周一~周五），每次约 $0.1，计入你的订阅额度。
+            </div>
+
+            <div className="my-2.5 border-t border-line" />
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-text">
+              <input
+                type="checkbox"
+                checked={bgMode}
+                onChange={(e) => setBgMode(e.target.checked)}
+                className="accent-[var(--color-gold)]"
+              />
+              后台常驻 · 开机自启
+            </label>
+            <div className="cjk mt-1.5 leading-relaxed text-[10px] text-faint">
+              开启后关闭窗口仅缩到菜单栏（不退出），并随开机自动在后台启动 —— 这样定时复盘无需手动开应用。
             </div>
           </div>
         </>

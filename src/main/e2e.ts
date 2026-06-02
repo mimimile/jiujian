@@ -11,10 +11,20 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 export function maybeRunE2E(win: BrowserWindow): void {
   const out = process.env.JJ_E2E
   if (!out) return
-  const mode = process.env.JJ_E2E_MODE === 'recap' ? 'recap' : 'analyze'
+  const envMode = process.env.JJ_E2E_MODE
+  const mode = envMode === 'recap' ? 'recap' : envMode === 'boot' ? 'boot' : 'analyze'
 
   win.webContents.once('did-finish-load', async () => {
     try {
+      if (mode === 'boot') {
+        // 仅验证启动（含 tray）+ 截图 + 退出，不触发分析（零成本）
+        await sleep(2500)
+        const img0 = await win.webContents.capturePage()
+        await writeFile(out, img0.toPNG())
+        console.log('[E2E:boot] captured ->', out)
+        app.quit()
+        return
+      }
       if (mode === 'recap') {
         await win.webContents.executeJavaScript(
           `localStorage.setItem('jj.watchlist', JSON.stringify([{symbol:'sh600519',market:'A'},{symbol:'00700',market:'HK'},{symbol:'sz000858',market:'A'}]))`

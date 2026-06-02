@@ -41,6 +41,9 @@
 
 - **复盘/分析历史留存**：`useHistory`（localStorage 最近 50 条，单股分析 + 复盘自动入史，含标题/时间/正文/成本）+ `HistoryDrawer`（masthead「🕘 历史」→ 右侧抽屉：列表 + 查看 markdown + 删除/清空）。auto-recap 也经包装的 `doRecap` 入史。
 
+- **后台常驻 + 开机自启**：菜单栏 `Tray`（内嵌烛台模板图）+「打开/立即复盘/退出」菜单；关窗缩 tray 不退出（`backgroundMode` + close 拦截）；`setLoginItemSettings(openAtLogin/openAsHidden)` 开机隐藏启动；`wasOpenedAsHidden` 时窗口隐藏启动。新增 SYSTEM_SET_BG/GET_BG IPC + SYSTEM_TRIGGER_RECAP(tray→renderer) + ⚙「后台常驻·开机自启」开关。让定时复盘不依赖手动开 app。
+- e2e 钩子加 `boot` 模式（零成本验证启动+截图+退出）。
+
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。
 - ⚠️ ToS：官方明禁第三方通过用户 Pro/Max 凭据路由请求（商业/公开场景的红线）；个人非商业自用属"ordinary individual usage"，不触发。
