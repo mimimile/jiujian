@@ -85,3 +85,50 @@ export async function buildAnalysisContext(symbol: string, market: Market): Prom
     .filter(Boolean)
     .join('\n')
 }
+
+async function fetchRawKline(client: StockSDK, code: string, market: Market): Promise<HistoryKline[]> {
+  if (market === 'HK') return (await client.getHKHistoryKline(code)) as unknown as HistoryKline[]
+  if (market === 'US') return (await client.getUSHistoryKline(code)) as unknown as HistoryKline[]
+  return client.getHistoryKline(code)
+}
+
+/** 单只标的的复盘紧凑一行（价/涨跌/MA多空/MACD/RSI/KDJ）。 */
+async function recapLine(client: StockSDK, symbol: string, market: Market): Promise<string> {
+  const code = symbol.trim()
+  const raw = await fetchRawKline(client, code, market)
+  if (!raw.length) return `${code}（无数据）`
+  const wi = addIndicators(raw.slice(-150), { ma: true, macd: true, rsi: true, kdj: true })
+  const last = wi[wi.length - 1]
+  const ma = (last.ma ?? {}) as Record<string, number>
+  const macd = (last.macd ?? {}) as Record<string, number>
+  const rsi = (last.rsi ?? {}) as Record<string, number>
+  const kdj = (last.kdj ?? {}) as Record<string, number>
+
+  let trend = '纠缠'
+  if (ma.ma5 > ma.ma10 && ma.ma10 > ma.ma20 && ma.ma20 > ma.ma60) trend = '多头排列'
+  else if (ma.ma5 < ma.ma10 && ma.ma10 < ma.ma20 && ma.ma20 < ma.ma60) trend = '空头排列'
+
+  const macdSig = `${macd.macd >= 0 ? '红柱' : '绿柱'}${macd.dif >= 0 ? '·DIF上' : '·DIF下'}`
+  const rsi6 = rsi.rsi6
+  const rsiSig = rsi6 == null ? '-' : `${rsi6.toFixed(0)}${rsi6 > 70 ? '(超买)' : rsi6 < 30 ? '(超卖)' : ''}`
+  const kdjSig = kdj.j == null ? '-' : kdj.j > 100 ? 'J>100超买' : kdj.j < 0 ? 'J<0超卖' : `J${kdj.j.toFixed(0)}`
+
+  return `${code} 收${fmt(last.close)} ${last.changePercent == null ? '' : (last.changePercent >= 0 ? '+' : '') + fmt(last.changePercent) + '%'} | 趋势:${trend} | MACD:${macdSig} | RSI6:${rsiSig} | ${kdjSig}`
+}
+
+/** 拼装盘后复盘数据块：大盘 + 全部自选股紧凑快照。一次注入，claude 出整体复盘。 */
+export async function buildRecapContext(items: Array<{ symbol: string; market: Market }>): Promise<string> {
+  const client = getSdk()
+  const indexLine = await recapLine(client, 'sh000001', 'A').catch(() => null)
+  const lines = await Promise.all(
+    items.map((it) => recapLine(client, it.symbol, it.market).catch(() => `${it.symbol}（取数失败）`))
+  )
+  return [
+    '## 盘后复盘数据（截至最新交易日；公开端点，可能延迟）',
+    indexLine ? `大盘 上证指数 ${indexLine}` : '',
+    `自选股（${items.length} 只）:`,
+    ...lines
+  ]
+    .filter(Boolean)
+    .join('\n')
+}

@@ -72,6 +72,8 @@ export interface JiuJianApi {
   }
   claude: {
     run(req: RunRequest): Promise<{ runId: RunId }>
+    /** 盘后复盘：批量自选股一次出报告，事件同样走 onEvent */
+    recap(items: Array<{ symbol: string; market: Market }>): Promise<{ runId: RunId }>
     cancel(runId: RunId): Promise<{ ok: boolean }>
     /** 订阅流式事件，返回取消订阅函数 */
     onEvent(cb: (e: ClaudeEvent) => void): () => void

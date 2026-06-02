@@ -10,6 +10,8 @@ const api: JiuJianApi = {
   },
   claude: {
     run: (req: RunRequest) => ipcRenderer.invoke(IPC.CLAUDE_RUN, req),
+    recap: (items: Array<{ symbol: string; market: Market }>) =>
+      ipcRenderer.invoke(IPC.CLAUDE_RECAP, { items }),
     cancel: (runId: RunId) => ipcRenderer.invoke(IPC.CLAUDE_CANCEL, { runId }),
     onEvent: (cb: (e: ClaudeEvent) => void) => {
       const listener = (_event: unknown, e: ClaudeEvent): void => cb(e)

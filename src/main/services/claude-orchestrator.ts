@@ -3,10 +3,19 @@ import readline from 'node:readline'
 import { randomUUID } from 'node:crypto'
 import type { BrowserWindow } from 'electron'
 import { IPC } from '@shared/ipc-channels'
-import type { ClaudeEvent, ClaudeErrorCode, RunId, RunRequest } from '@shared/types'
+import type { ClaudeEvent, ClaudeErrorCode, Market, RunId, RunRequest } from '@shared/types'
 import type { AuthProvider } from './auth/auth-provider'
 import { writeStockMcpConfig } from './mcp-config'
-import { buildAnalysisContext } from './analysis-context'
+import { buildAnalysisContext, buildRecapContext } from './analysis-context'
+
+const RECAP_INSTRUCTION = [
+  '请基于以上盘后快照做一份「自选股盘后复盘」，用中文 markdown、分点简明：',
+  '1. 大盘与整体情绪；',
+  '2. 自选股今日表现分化（点名强势 / 弱势 / 异动标的）；',
+  '3. 值得关注的标的与理由（趋势 / 超买超卖 / 资金）；',
+  '4. 主要风险与明日关注点。',
+  '最后注明数据可能延迟、不构成投资建议。'
+].join('\n')
 
 interface ActiveRun {
   child: ChildProcess
@@ -29,17 +38,8 @@ export class ClaudeOrchestrator {
     return this.mcpConfigPath
   }
 
+  /** 单股深度分析：默认本地预取数据注入、无 MCP；无 symbol/market 或预取失败则退回 MCP。 */
   async run(req: RunRequest, win: BrowserWindow): Promise<RunId> {
-    const runId = randomUUID()
-    const controller = new AbortController()
-    const startedAt = Date.now()
-
-    const emit = (e: ClaudeEvent): void => {
-      if (!win.isDestroyed()) win.webContents.send(IPC.CLAUDE_EVENT, e)
-    }
-
-    // 默认：本地预取紧凑数据注入 prompt，claude 无 MCP 直接分析（省钱，实测 $1.5→预计 $0.3-0.5）。
-    // 退回：无 symbol/market 或预取失败时，挂 MCP 让 claude 自己拉。
     let finalPrompt = req.prompt
     let mcpConfigPath: string | undefined
     try {
@@ -53,10 +53,38 @@ export class ClaudeOrchestrator {
       mcpConfigPath = this.getMcpConfig()
       finalPrompt = req.prompt
     }
+    return this._execute({ ...req, prompt: finalPrompt }, mcpConfigPath, win)
+  }
+
+  /** 盘后复盘：把全部自选股紧凑快照 + 大盘注入，一次 claude 出整体复盘。 */
+  async runRecap(items: Array<{ symbol: string; market: Market }>, win: BrowserWindow): Promise<RunId> {
+    const market: Market = items[0]?.market ?? 'A'
+    let finalPrompt = RECAP_INSTRUCTION
+    try {
+      const ctx = await buildRecapContext(items)
+      finalPrompt = `${ctx}\n\n---\n\n${RECAP_INSTRUCTION}\n\n（以上数据已由本地预取，请直接基于它复盘，不要调用任何工具。）`
+    } catch {
+      finalPrompt = RECAP_INSTRUCTION
+    }
+    return this._execute({ prompt: finalPrompt, market }, undefined, win)
+  }
+
+  private async _execute(
+    req: RunRequest,
+    mcpConfigPath: string | undefined,
+    win: BrowserWindow
+  ): Promise<RunId> {
+    const runId = randomUUID()
+    const controller = new AbortController()
+    const startedAt = Date.now()
+
+    const emit = (e: ClaudeEvent): void => {
+      if (!win.isDestroyed()) win.webContents.send(IPC.CLAUDE_EVENT, e)
+    }
 
     let plan
     try {
-      plan = await this.provider.buildSpawnPlan({ ...req, prompt: finalPrompt }, { mcpConfigPath })
+      plan = await this.provider.buildSpawnPlan(req, { mcpConfigPath })
     } catch (err) {
       emit({ type: 'error', runId, message: errMsg(err), code: 'NOT_FOUND' })
       return runId

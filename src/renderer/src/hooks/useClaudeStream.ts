@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ClaudeEvent, ClaudeErrorCode, RunId, RunRequest } from '@shared/types'
+import type { ClaudeEvent, ClaudeErrorCode, Market, RunId, RunRequest } from '@shared/types'
 
 export interface StreamState {
   runId: RunId | null
@@ -24,6 +24,7 @@ const INITIAL: StreamState = {
 export function useClaudeStream(): {
   state: StreamState
   run: (req: RunRequest) => Promise<void>
+  recap: (items: Array<{ symbol: string; market: Market }>) => Promise<void>
   cancel: () => Promise<void>
 } {
   const [state, setState] = useState<StreamState>(INITIAL)
@@ -65,9 +66,17 @@ export function useClaudeStream(): {
     setState((s) => ({ ...s, runId }))
   }, [])
 
+  const recap = useCallback(async (items: Array<{ symbol: string; market: Market }>) => {
+    runIdRef.current = null
+    setState({ ...INITIAL, running: true })
+    const { runId } = await window.api.claude.recap(items)
+    runIdRef.current = runId
+    setState((s) => ({ ...s, runId }))
+  }, [])
+
   const cancel = useCallback(async () => {
     if (runIdRef.current) await window.api.claude.cancel(runIdRef.current)
   }, [])
 
-  return { state, run, cancel }
+  return { state, run, recap, cancel }
 }

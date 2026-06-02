@@ -20,6 +20,13 @@ export const klineRequestSchema = z.object({
 // 行情请求与 K线同形
 export const quoteRequestSchema = klineRequestSchema
 
+export const recapRequestSchema = z.object({
+  items: z
+    .array(z.object({ symbol: z.string().min(1).max(32), market: z.enum(['A', 'HK', 'US', 'FUND']) }))
+    .min(1)
+    .max(50)
+})
+
 export type RunRequestInput = z.infer<typeof runRequestSchema>
 export type CancelRequestInput = z.infer<typeof cancelRequestSchema>
 export type KlineRequestInput = z.infer<typeof klineRequestSchema>

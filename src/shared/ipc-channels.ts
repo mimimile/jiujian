@@ -7,6 +7,8 @@ export const IPC = {
   CLAUDE_RUN: 'claude:run',
   /** renderer -> main (invoke)：取消某次运行 */
   CLAUDE_CANCEL: 'claude:cancel',
+  /** renderer -> main (invoke)：盘后复盘（批量自选股一次出报告） */
+  CLAUDE_RECAP: 'claude:recap',
   /** main -> renderer (send)：流式分析事件 */
   CLAUDE_EVENT: 'claude:event',
   /** renderer -> main (invoke)：图表用 K线（main 直接走 stock-sdk 拉取） */

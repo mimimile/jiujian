@@ -19,7 +19,7 @@ export default function App(): JSX.Element {
   const [detecting, setDetecting] = useState(true)
   const [symbol, setSymbol] = useState('sh600519')
   const [market, setMarket] = useState<Market>('A')
-  const { state, run, cancel } = useClaudeStream()
+  const { state, run, recap, cancel } = useClaudeStream()
   const wl = useWatchlist()
   const trimmed = symbol.trim()
   const watched = wl.has(trimmed, market)
@@ -100,6 +100,14 @@ export default function App(): JSX.Element {
             }`}
           >
             {watched ? '★ 已自选' : '☆ 自选'}
+          </button>
+          <button
+            onClick={() => void recap(wl.items)}
+            disabled={!ready || wl.items.length === 0 || state.running}
+            title="对全部自选股做盘后复盘"
+            className="rounded-sm border border-gold/40 px-3 py-1.5 text-xs text-gold transition-colors hover:bg-gold/10 disabled:cursor-not-allowed disabled:border-line disabled:text-faint"
+          >
+            ⊞ 复盘
           </button>
         </div>
 

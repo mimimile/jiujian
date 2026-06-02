@@ -39,6 +39,20 @@ export function installDevMockIfNeeded(): void {
         )
         return { runId }
       },
+      recap: async () => {
+        const runId = 'mock-recap'
+        const md = SAMPLE_RECAP_MD
+        const chunks = md.match(/[\s\S]{1,14}/g) ?? []
+        window.setTimeout(() => onEventCb?.({ type: 'started', runId }), 60)
+        chunks.forEach((ch, i) =>
+          window.setTimeout(() => onEventCb?.({ type: 'text', runId, delta: ch }), 260 + i * 22)
+        )
+        window.setTimeout(
+          () => onEventCb?.({ type: 'done', runId, text: md, costUsd: 0.2106, durationMs: 5200 }),
+          260 + chunks.length * 22 + 200
+        )
+        return { runId }
+      },
       cancel: async () => ({ ok: true }),
       onEvent: (cb) => {
         onEventCb = cb
@@ -102,3 +116,22 @@ const SAMPLE_MD = `贵州茅台 sh600519 分析。数据截至 2026-06-01。**�
 ## 4. 风险提示
 - 高位估值回归未结束，反弹失败或再创新低。
 - 数据可能延迟，不构成投资建议。`
+
+const SAMPLE_RECAP_MD = `# 自选股盘后复盘 · 2026-06-01
+
+## 1. 大盘与整体情绪
+- 上证指数收跌，量能温和。市场情绪偏谨慎，权重股领跌。
+
+## 2. 今日表现分化
+- **弱势**：贵州茅台 −1.24%（空头排列，MACD 绿柱），承压明显。
+- **相对抗跌**：腾讯控股微跌，资金小幅净流入。
+
+## 3. 值得关注
+- **贵州茅台**：超跌反弹临近 ma20(1329) 压力，关注能否放量站稳。
+- **AAPL**：RSI 回落至中性，趋势待观察。
+
+## 4. 风险与明日关注
+- 权重股估值回归未结束，注意指数下行风险。
+- 明日关注量能能否放大、北向资金动向。
+
+数据可能延迟，不构成投资建议。`
