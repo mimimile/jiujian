@@ -37,6 +37,8 @@
 - **M4 盘后复盘/每日摘要**：masthead「复盘」按钮 → main 拼全自选股紧凑快照(价/涨跌/MA多空/MACD/RSI/KDJ)+大盘(sh000001) → 一次 claude 出整体复盘(情绪/分化/值得关注/风险)，流入 AI 面板。新增 CLAUDE_RECAP IPC + orchestrator.runRecap(复用 _execute) + buildRecapContext + useClaudeStream.recap。
 - 真机 e2e 验证（含复盘模式）：单股分析 + 复盘均端到端跑通真 claude，复盘 3股+大盘 ~$0.11。e2e 钩子(JJ_E2E)支持 analyze/recap 双模式。
 
+- **定时收盘自动复盘 + 通知**：`useAutoRecap`（app 内调度，工作日到设定时间自动触发复盘 + 系统 Notification[开始/完成]，localStorage 持久化设置并防当日重复）。`SettingsPopover`（⚙ 齿轮：开关 + 时间）。注：依赖 app 保持开启。
+
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。
 - ⚠️ ToS：官方明禁第三方通过用户 Pro/Max 凭据路由请求（商业/公开场景的红线）；个人非商业自用属"ordinary individual usage"，不触发。

@@ -4,9 +4,11 @@ import { StatusBanner } from './components/StatusBanner'
 import { QuoteHeader } from './components/QuoteHeader'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { Watchlist } from './components/Watchlist'
+import { SettingsPopover } from './components/SettingsPopover'
 import { KLineChartPanel } from './components/chart/KLineChartPanel'
 import { useClaudeStream } from './hooks/useClaudeStream'
 import { useWatchlist } from './hooks/useWatchlist'
+import { useAutoRecap } from './hooks/useAutoRecap'
 import { buildAnalysisPrompt, MARKET_LABEL } from './lib/prompt'
 
 const MARKETS: Market[] = ['A', 'HK', 'US', 'FUND']
@@ -39,6 +41,7 @@ export default function App(): JSX.Element {
 
   const ready = Boolean(detect?.found && detect?.loggedIn)
   const canRun = ready && trimmed.length > 0 && !state.running
+  const auto = useAutoRecap({ ready, items: wl.items, recap, state })
 
   const onAnalyze = (): void => {
     if (!trimmed) return
@@ -111,6 +114,11 @@ export default function App(): JSX.Element {
           </button>
         </div>
 
+        <SettingsPopover
+          settings={auto.settings}
+          setEnabled={auto.setEnabled}
+          setTime={auto.setTime}
+        />
         <StatusBanner detect={detect} loading={detecting} onRetry={() => void runDetect()} />
       </header>
 
