@@ -2,6 +2,9 @@ appId: cn.jiujian.app
 productName: 韭见
 copyright: Copyright © 2026 韭见 JiuJian
 
+# 产物名用 ASCII（避免 GitHub Release 等去掉中文导致 "-0.1.0-arm64.dmg" 这种坏名）
+artifactName: ${name}-${version}-${arch}.${ext}
+
 directories:
   buildResources: build
   output: release
