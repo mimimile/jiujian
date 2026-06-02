@@ -4,6 +4,7 @@ import { SubscriptionCliProvider } from './services/auth/subscription-cli-provid
 import { ClaudeOrchestrator } from './services/claude-orchestrator'
 import { createWindow } from './window'
 import { registerIpc } from './ipc'
+import { maybeRunE2E } from './e2e'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -21,6 +22,7 @@ app.whenReady().then(async () => {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  maybeRunE2E(mainWindow)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
