@@ -1,0 +1,44 @@
+appId: cn.jiujian.app
+productName: 韭见
+copyright: Copyright © 2026 韭见 JiuJian
+
+directories:
+  buildResources: build
+  output: release
+
+# 只打包构建产物 + 运行时需要的生产依赖（stock-sdk / zod 在 main 进程被外部化引用）
+files:
+  - out/**/*
+  - package.json
+
+# asar 打包；解包 stock-sdk 以便其运行时正常读取（保守起见）
+asar: true
+
+mac:
+  # 可执行名用 ASCII，避免中文 productName 当二进制名导致 rename 失败（显示名仍是「韭见」）
+  executableName: jiujian
+  target:
+    - target: dmg
+      arch:
+        - arm64
+    - target: zip
+      arch:
+        - arm64
+  category: public.app-category.finance
+  # 个人本地构建：不签名、不公证（分发给他人需另配 Developer ID + notarize）
+  identity: null
+
+dmg:
+  title: 韭见 JiuJian
+
+win:
+  target:
+    - nsis
+
+linux:
+  target:
+    - AppImage
+  category: Finance
+
+# 个人构建跳过原生依赖重建（无原生模块）
+npmRebuild: false

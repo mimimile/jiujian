@@ -29,6 +29,8 @@
 - **M3 增量**：自选股 watchlist（localStorage 持久化，侧栏列表/增删/点选加载，工具栏「☆ 自选」切换）。
 - 修：FUND 涨跌幅不再伪造（SDK `change` 语义存疑）→ 置 null，只展示净值 + 原始 change。
 
+- **M5 打包**：electron-builder 配置（appId `cn.jiujian.app`、mac dmg+zip arm64、Win NSIS、Linux AppImage），脚本 `pack:dir`/`dist:mac`/`dist:win`。本地无签名 `.app`（261M）已构建并验证真启动。中文 productName rename 问题用 `executableName: jiujian` 解决（显示名仍「韭见」）。
+
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。
 - ⚠️ ToS：官方明禁第三方通过用户 Pro/Max 凭据路由请求（商业/公开场景的红线）；个人非商业自用属"ordinary individual usage"，不触发。
