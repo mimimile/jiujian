@@ -2,9 +2,17 @@
   "name": "jiujian",
   "version": "0.1.0",
   "description": "韭见 JiuJian — 个人非商业的 AI 股票分析桌面应用，复用自己的 Claude Code 订阅",
-  "author": "",
+  "author": "mimimile",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mimimile/jiujian.git"
+  },
+  "homepage": "https://github.com/mimimile/jiujian#readme",
+  "bugs": {
+    "url": "https://github.com/mimimile/jiujian/issues"
+  },
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
