@@ -17,3 +17,6 @@ release
 # 工具产物
 .specstory/
 .cursorindexingignore
+
+# UI 迭代截图(开发用)
+.jj-shots/

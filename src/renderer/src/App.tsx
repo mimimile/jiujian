@@ -11,8 +11,8 @@ import { buildAnalysisPrompt, MARKET_LABEL } from './lib/prompt'
 
 const MARKETS: Market[] = ['A', 'HK', 'US', 'FUND']
 
-const inputCls =
-  'flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink)] px-3 py-1.5 text-sm text-gray-100 outline-none focus:border-gray-500'
+const fieldCls =
+  'rounded-sm border border-line bg-ink px-2.5 py-1.5 text-xs text-text outline-none transition-colors focus:border-gold/60'
 
 export default function App(): JSX.Element {
   const [detect, setDetect] = useState<DetectResult | null>(null)
@@ -38,90 +38,110 @@ export default function App(): JSX.Element {
   }, [runDetect])
 
   const ready = Boolean(detect?.found && detect?.loggedIn)
-  const canRun = ready && symbol.trim().length > 0 && !state.running
+  const canRun = ready && trimmed.length > 0 && !state.running
 
   const onAnalyze = (): void => {
-    const code = symbol.trim()
-    if (!code) return
-    void run({ prompt: buildAnalysisPrompt(code, market), symbol: code, market })
+    if (!trimmed) return
+    void run({ prompt: buildAnalysisPrompt(trimmed, market), symbol: trimmed, market })
   }
 
   return (
-    <div className="flex h-screen flex-col gap-3 p-4">
-      <header className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold text-gray-100">
-          韭见 <span className="text-sm font-normal text-gray-500">JiuJian · 让韭菜有洞见</span>
-        </h1>
-        <div className="ml-auto w-[62%] min-w-[420px]">
-          <StatusBanner detect={detect} loading={detecting} onRetry={() => void runDetect()} />
+    <div className="flex h-screen flex-col">
+      {/* MASTHEAD · 终端命令栏 */}
+      <header className="flex items-center gap-3 border-b border-line bg-panel/50 px-4 py-2.5">
+        <div className="flex items-baseline gap-2">
+          <span className="cjk text-lg font-bold leading-none tracking-tight text-text">韭见</span>
+          <span className="text-[10px] font-medium tracking-[0.32em] text-gold">JIUJIAN</span>
         </div>
+        <span className="cjk hidden text-[10px] text-faint lg:inline">让韭菜有洞见</span>
+
+        <div className="ml-4 flex flex-1 items-center gap-2">
+          <select value={market} onChange={(e) => setMarket(e.target.value as Market)} className={fieldCls}>
+            {MARKETS.map((m) => (
+              <option key={m} value={m}>
+                {MARKET_LABEL[m]}
+              </option>
+            ))}
+          </select>
+          <input
+            value={symbol}
+            onChange={(e) => setSymbol(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && canRun) onAnalyze()
+            }}
+            placeholder="代码 sh600519 / 00700 / AAPL"
+            spellCheck={false}
+            className={`${fieldCls} w-60 uppercase tracking-wide placeholder:normal-case placeholder:tracking-normal placeholder:text-faint`}
+          />
+          {state.running ? (
+            <button
+              onClick={() => void cancel()}
+              className="rounded-sm border border-up/50 px-4 py-1.5 text-xs font-semibold text-up transition-colors hover:bg-up/10"
+            >
+              取消
+            </button>
+          ) : (
+            <button
+              onClick={onAnalyze}
+              disabled={!canRun}
+              className="rounded-sm bg-gold px-5 py-1.5 text-xs font-semibold tracking-wide text-ink transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:bg-line-2 disabled:text-faint"
+            >
+              分析
+            </button>
+          )}
+          <button
+            onClick={() => (watched ? wl.remove(trimmed, market) : wl.add({ symbol: trimmed, market }))}
+            disabled={!trimmed}
+            title={watched ? '移出自选' : '加入自选'}
+            className={`rounded-sm border px-3 py-1.5 text-xs transition-colors disabled:opacity-30 ${
+              watched
+                ? 'border-gold/50 text-gold'
+                : 'border-line text-muted hover:border-line-2 hover:text-text'
+            }`}
+          >
+            {watched ? '★ 已自选' : '☆ 自选'}
+          </button>
+        </div>
+
+        <StatusBanner detect={detect} loading={detecting} onRetry={() => void runDetect()} />
       </header>
 
-      <div className="flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] p-2">
-        <select
-          value={market}
-          onChange={(e) => setMarket(e.target.value as Market)}
-          className="rounded border border-[var(--color-line)] bg-[var(--color-ink)] px-2 py-1.5 text-sm text-gray-100 outline-none"
-        >
-          {MARKETS.map((m) => (
-            <option key={m} value={m}>
-              {MARKET_LABEL[m]}
-            </option>
-          ))}
-        </select>
-        <input
-          value={symbol}
-          onChange={(e) => setSymbol(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && canRun) onAnalyze()
-          }}
-          placeholder="股票代码，如 sh600519 / 00700 / AAPL"
-          className={inputCls}
-        />
-        {state.running ? (
-          <button
-            onClick={() => void cancel()}
-            className="rounded bg-[var(--color-up)] px-4 py-1.5 text-sm font-medium text-white hover:opacity-90"
-          >
-            取消
-          </button>
-        ) : (
-          <button
-            onClick={onAnalyze}
-            disabled={!canRun}
-            className="rounded bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            分析
-          </button>
-        )}
-        <button
-          onClick={() => (watched ? wl.remove(trimmed, market) : wl.add({ symbol: trimmed, market }))}
-          disabled={!trimmed}
-          className="rounded border border-[var(--color-line)] px-3 py-1.5 text-sm text-gray-300 hover:bg-[var(--color-panel-2)] disabled:opacity-40"
-        >
-          {watched ? '★ 已自选' : '☆ 自选'}
-        </button>
-      </div>
-
-      <div className="px-1">
+      {/* 行情条 */}
+      <div className="jj-reveal" style={{ animationDelay: '60ms' }}>
         <QuoteHeader symbol={symbol} market={market} />
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-3">
-        <Watchlist
-          items={wl.items}
-          current={{ symbol: trimmed, market }}
-          onSelect={(it) => {
-            setSymbol(it.symbol)
-            setMarket(it.market)
-          }}
-          onRemove={wl.remove}
-        />
-        <main className="grid min-h-0 flex-1 grid-cols-2 gap-3">
-          <KLineChartPanel symbol={symbol} market={market} />
-          <AnalysisPanel state={state} />
+      {/* 主区 */}
+      <div className="flex min-h-0 flex-1">
+        <div className="jj-reveal h-full shrink-0" style={{ animationDelay: '120ms' }}>
+          <Watchlist
+            items={wl.items}
+            current={{ symbol: trimmed, market }}
+            onSelect={(it) => {
+              setSymbol(it.symbol)
+              setMarket(it.market)
+            }}
+            onRemove={wl.remove}
+          />
+        </div>
+        <main className="grid min-h-0 flex-1 grid-cols-2 gap-2 p-2">
+          <div className="jj-reveal min-h-0" style={{ animationDelay: '160ms' }}>
+            <KLineChartPanel symbol={symbol} market={market} />
+          </div>
+          <div className="jj-reveal min-h-0" style={{ animationDelay: '200ms' }}>
+            <AnalysisPanel state={state} />
+          </div>
         </main>
       </div>
+
+      {/* 免责声明常驻 */}
+      <footer className="flex items-center gap-2 border-t border-line bg-ink-2 px-4 py-1 text-[10px] text-faint">
+        <span className="text-gold-dim">⚠</span>
+        <span className="cjk">
+          数据源为公开端点，可能延迟数十秒~分钟 · 本应用输出为数据分析，<span className="text-muted">非投资建议</span>，据此操作风险自负
+        </span>
+        <span className="nums ml-auto tracking-wider text-faint">v0.1.0</span>
+      </footer>
     </div>
   )
 }

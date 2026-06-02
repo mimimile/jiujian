@@ -15,54 +15,69 @@ export function AnalysisPanel({ state }: { state: StreamState }): JSX.Element {
   const { running, text, tools, costUsd, durationMs, error } = state
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)]">
-      <div className="flex items-center gap-2 border-b border-[var(--color-line)] px-4 py-2 text-sm text-gray-400">
-        <span className="font-medium text-gray-200">AI 分析</span>
-        {running && <span className="text-xs text-amber-300">● 分析中…</span>}
+    <section className="flex h-full flex-col overflow-hidden rounded-md border border-line bg-panel">
+      <header className="flex items-center gap-2 border-b border-line px-4 py-2">
+        <span className="text-[11px] font-medium tracking-[0.18em] text-muted">AI 分析 · CLAUDE</span>
+        {running && <span className="jj-blink text-[10px] text-gold">● 推理中</span>}
         {tools.length > 0 && (
-          <span className="ml-2 flex flex-wrap gap-1">
-            {tools.map((t, i) => (
-              <code
-                key={`${t}-${i}`}
-                className="rounded bg-[var(--color-panel-2)] px-1.5 py-0.5 text-[11px] text-gray-300"
-              >
+          <span className="ml-auto flex flex-wrap justify-end gap-1">
+            {tools.slice(-4).map((t, i) => (
+              <code key={`${t}-${i}`} className="rounded-sm bg-panel-2 px-1.5 py-0.5 text-[10px] text-faint">
                 {t}
               </code>
             ))}
           </span>
         )}
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-auto px-4 py-3">
+      <div className="relative flex-1 overflow-auto px-4 py-3">
         {error ? (
-          <div className="rounded border border-[var(--color-up)]/50 bg-[var(--color-up)]/10 p-3 text-sm text-red-200">
-            <div className="font-medium">分析失败（{error.code}）</div>
-            <div className="mt-1 text-red-300/90">{ERROR_HINT[error.code]}</div>
-            <pre className="mt-2 whitespace-pre-wrap break-words text-xs text-red-300/70">
-              {error.message}
-            </pre>
+          <div className="jj-reveal rounded border border-up/40 bg-up/5 p-3 text-xs">
+            <div className="font-medium text-up">分析失败 · {error.code}</div>
+            <div className="cjk mt-1 text-muted">{ERROR_HINT[error.code]}</div>
+            <pre className="mt-2 whitespace-pre-wrap break-words text-[11px] text-faint">{error.message}</pre>
           </div>
         ) : text ? (
-          <div className="prose-jj text-sm leading-relaxed text-gray-100">
+          <div className="prose-jj jj-reveal">
             <Markdown>{text}</Markdown>
           </div>
+        ) : running ? (
+          <LoadingHint />
         ) : (
-          <div className="grid h-full place-items-center text-sm text-gray-500">
-            {running ? '正在请求 Claude…' : '输入股票代码，点击「分析」'}
-          </div>
+          <EmptyHint />
         )}
       </div>
 
       {(costUsd != null || durationMs != null) && (
-        <div className="border-t border-[var(--color-line)] px-4 py-2 text-xs text-gray-400">
-          {durationMs != null && <span>耗时 {(durationMs / 1000).toFixed(1)}s</span>}
-          {costUsd != null && (
-            <span className="ml-3">
-              本次成本 ${costUsd.toFixed(4)}（计入你本月 Agent SDK 额度）
-            </span>
-          )}
-        </div>
+        <footer className="nums flex items-center gap-3 border-t border-line px-4 py-1.5 text-[11px] text-muted">
+          {durationMs != null && <span>⧗ {(durationMs / 1000).toFixed(1)}s</span>}
+          {costUsd != null && <span className="font-medium text-gold">${costUsd.toFixed(4)}</span>}
+          {costUsd != null && <span className="cjk text-faint">计入本月 Agent SDK 额度</span>}
+        </footer>
       )}
+    </section>
+  )
+}
+
+function LoadingHint(): JSX.Element {
+  return (
+    <div className="space-y-2.5 pt-1">
+      <div className="cjk jj-blink text-[11px] text-gold">› 本地预取数据 · 调用 Claude 推理…</div>
+      {[92, 78, 85, 64, 80].map((w, i) => (
+        <div key={i} className="jj-shimmer h-3 rounded-sm bg-panel-2" style={{ width: `${w}%` }} />
+      ))}
+    </div>
+  )
+}
+
+function EmptyHint(): JSX.Element {
+  return (
+    <div className="grid h-full place-items-center">
+      <div className="text-center">
+        <div className="text-4xl text-line-2">◰</div>
+        <div className="cjk mt-3 text-xs text-muted">输入股票代码，点「分析」</div>
+        <div className="cjk mt-1 text-[10px] text-faint">单次约 $0.13 · 计入你的订阅额度</div>
+      </div>
     </div>
   )
 }

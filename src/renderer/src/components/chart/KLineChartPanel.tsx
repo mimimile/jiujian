@@ -7,6 +7,13 @@ interface Props {
   market: Market
 }
 
+const UP = '#f6394e'
+const DOWN = '#16b877'
+const GOLD = '#e7b53c'
+const LINE = '#1c1e24'
+const AXIS = '#23252c'
+const MUTED = '#8b8f98'
+
 export function KLineChartPanel({ symbol, market }: Props): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<Chart | null>(null)
@@ -14,29 +21,37 @@ export function KLineChartPanel({ symbol, market }: Props): JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [count, setCount] = useState(0)
 
-  // 初始化图表（一次）
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
     const chart = init(el)
     chartRef.current = chart
-    // 显式钉死红涨绿跌（klinecharts 默认即如此，这里固化意图）
     chart?.setStyles({
+      grid: {
+        horizontal: { color: LINE },
+        vertical: { color: LINE }
+      },
       candle: {
         bar: {
-          upColor: '#e5484d',
-          downColor: '#2f9e44',
-          noChangeColor: '#888888',
-          upBorderColor: '#e5484d',
-          downBorderColor: '#2f9e44',
-          noChangeBorderColor: '#888888',
-          upWickColor: '#e5484d',
-          downWickColor: '#2f9e44',
-          noChangeWickColor: '#888888'
+          upColor: UP,
+          downColor: DOWN,
+          noChangeColor: MUTED,
+          upBorderColor: UP,
+          downBorderColor: DOWN,
+          noChangeBorderColor: MUTED,
+          upWickColor: UP,
+          downWickColor: DOWN,
+          noChangeWickColor: MUTED
         }
+      },
+      xAxis: { axisLine: { color: AXIS }, tickLine: { color: AXIS }, tickText: { color: MUTED } },
+      yAxis: { axisLine: { color: AXIS }, tickLine: { color: AXIS }, tickText: { color: MUTED } },
+      separator: { color: AXIS },
+      crosshair: {
+        horizontal: { line: { color: GOLD }, text: { backgroundColor: GOLD, borderColor: GOLD } },
+        vertical: { line: { color: GOLD }, text: { backgroundColor: GOLD, borderColor: GOLD } }
       }
     })
-    // 指标：MA 叠加主图 candle_pane；VOL / MACD 各自副图
     chart?.createIndicator('MA', true, { id: 'candle_pane' })
     chart?.createIndicator('VOL')
     chart?.createIndicator('MACD')
@@ -46,7 +61,6 @@ export function KLineChartPanel({ symbol, market }: Props): JSX.Element {
     }
   }, [])
 
-  // symbol/market 变化时拉日K（防抖 500ms）
   useEffect(() => {
     const code = symbol.trim()
     if (!code) return
@@ -64,7 +78,7 @@ export function KLineChartPanel({ symbol, market }: Props): JSX.Element {
       } finally {
         if (!cancelled) setLoading(false)
       }
-    }, 500)
+    }, 450)
     return () => {
       cancelled = true
       clearTimeout(timer)
@@ -72,23 +86,22 @@ export function KLineChartPanel({ symbol, market }: Props): JSX.Element {
   }, [symbol, market])
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)]">
-      <div className="flex items-center gap-2 border-b border-[var(--color-line)] px-4 py-2 text-sm text-gray-400">
-        <span className="font-medium text-gray-200">K线（日）</span>
-        {loading && <span className="text-xs text-amber-300">加载中…</span>}
-        {!loading && !error && count > 0 && (
-          <span className="text-xs text-gray-500">{count} 根</span>
-        )}
-        {error && <span className="text-xs text-[var(--color-up)]">数据获取失败</span>}
-      </div>
-      <div className="relative flex-1">
-        <div ref={containerRef} className="absolute inset-0 bg-white" />
+    <section className="flex h-full flex-col overflow-hidden rounded-md border border-line bg-panel">
+      <header className="flex items-center gap-2 border-b border-line px-4 py-2">
+        <span className="text-[11px] font-medium tracking-[0.18em] text-muted">K线 · DAILY</span>
+        <span className="text-[10px] text-faint">MA · VOL · MACD</span>
+        {loading && <span className="jj-blink ml-auto text-[10px] text-gold">载入中</span>}
+        {!loading && !error && count > 0 && <span className="nums ml-auto text-[10px] text-faint">{count} 根</span>}
+        {error && <span className="cjk ml-auto text-[10px] text-up">数据获取失败</span>}
+      </header>
+      <div className="relative flex-1 bg-ink">
+        <div ref={containerRef} className="absolute inset-0" />
         {error && (
-          <div className="absolute inset-x-0 bottom-0 bg-[var(--color-panel)]/90 p-2 text-center text-xs text-red-300/80">
+          <div className="absolute inset-x-0 bottom-0 bg-panel/90 p-2 text-center text-[10px] text-up/80">
             {error}
           </div>
         )}
       </div>
-    </div>
+    </section>
   )
 }
