@@ -44,6 +44,9 @@
 - **后台常驻 + 开机自启**：菜单栏 `Tray`（内嵌烛台模板图）+「打开/立即复盘/退出」菜单；关窗缩 tray 不退出（`backgroundMode` + close 拦截）；`setLoginItemSettings(openAtLogin/openAsHidden)` 开机隐藏启动；`wasOpenedAsHidden` 时窗口隐藏启动。新增 SYSTEM_SET_BG/GET_BG IPC + SYSTEM_TRIGGER_RECAP(tray→renderer) + ⚙「后台常驻·开机自启」开关。让定时复盘不依赖手动开 app。
 - e2e 钩子加 `boot` 模式（零成本验证启动+截图+退出）。
 
+- **首启引导**：claude 未找到/未登录时，AI 分析栏显示 `Onboarding`（三步：安装文档链接 + `claude auth login` 可复制 + 重新检测按钮 + 检测信息 + 额度说明），左侧图表照常可用。
+- **squircle 圆角图标**：用 canvas 透明角重做 `build/icon.png`（macOS 原生圆角，替换原方形）。
+
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。
 - ⚠️ ToS：官方明禁第三方通过用户 Pro/Max 凭据路由请求（商业/公开场景的红线）；个人非商业自用属"ordinary individual usage"，不触发。

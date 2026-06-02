@@ -3,6 +3,7 @@ import type { DetectResult, Market } from '@shared/types'
 import { StatusBanner } from './components/StatusBanner'
 import { QuoteHeader } from './components/QuoteHeader'
 import { AnalysisPanel } from './components/AnalysisPanel'
+import { Onboarding } from './components/Onboarding'
 import { Watchlist } from './components/Watchlist'
 import { SettingsPopover } from './components/SettingsPopover'
 import { HistoryDrawer } from './components/HistoryDrawer'
@@ -205,7 +206,11 @@ export default function App(): JSX.Element {
             <KLineChartPanel symbol={symbol} market={market} />
           </div>
           <div className="jj-reveal min-h-0" style={{ animationDelay: '200ms' }}>
-            <AnalysisPanel state={state} />
+            {!detecting && !ready ? (
+              <Onboarding detect={detect} onRetry={() => void runDetect()} />
+            ) : (
+              <AnalysisPanel state={state} />
+            )}
           </div>
         </main>
       </div>
