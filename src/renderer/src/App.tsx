@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DetectResult, Market } from '@shared/types'
 import { StatusBanner } from './components/StatusBanner'
 import { QuoteHeader } from './components/QuoteHeader'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { Watchlist } from './components/Watchlist'
 import { SettingsPopover } from './components/SettingsPopover'
+import { HistoryDrawer } from './components/HistoryDrawer'
 import { KLineChartPanel } from './components/chart/KLineChartPanel'
 import { useClaudeStream } from './hooks/useClaudeStream'
 import { useWatchlist } from './hooks/useWatchlist'
 import { useAutoRecap } from './hooks/useAutoRecap'
+import { useHistory } from './hooks/useHistory'
 import { buildAnalysisPrompt, MARKET_LABEL } from './lib/prompt'
 
 const MARKETS: Market[] = ['A', 'HK', 'US', 'FUND']
@@ -41,10 +43,40 @@ export default function App(): JSX.Element {
 
   const ready = Boolean(detect?.found && detect?.loggedIn)
   const canRun = ready && trimmed.length > 0 && !state.running
-  const auto = useAutoRecap({ ready, items: wl.items, recap, state })
+  const history = useHistory()
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const lastMeta = useRef<{ type: 'analysis' | 'recap'; title: string }>({
+    type: 'analysis',
+    title: ''
+  })
+  const savedRunId = useRef<string | null>(null)
+
+  // 复盘触发包装：设 meta（供入史），auto-recap 与按钮共用
+  const doRecap = useCallback(
+    (items: Array<{ symbol: string; market: Market }>) => {
+      lastMeta.current = { type: 'recap', title: `盘后复盘 · ${items.length}只` }
+      return recap(items)
+    },
+    [recap]
+  )
+  const auto = useAutoRecap({ ready, items: wl.items, recap: doRecap, state })
+
+  // 分析/复盘完成 → 存入历史（按 runId 去重）
+  useEffect(() => {
+    if (!state.running && state.runId && state.text && savedRunId.current !== state.runId) {
+      savedRunId.current = state.runId
+      history.add({
+        type: lastMeta.current.type,
+        title: lastMeta.current.title || '分析',
+        text: state.text,
+        costUsd: state.costUsd
+      })
+    }
+  }, [state.running, state.runId, state.text, state.costUsd, history.add])
 
   const onAnalyze = (): void => {
     if (!trimmed) return
+    lastMeta.current = { type: 'analysis', title: `${MARKET_LABEL[market]} ${trimmed.toUpperCase()}` }
     void run({ prompt: buildAnalysisPrompt(trimmed, market), symbol: trimmed, market })
   }
 
@@ -105,7 +137,7 @@ export default function App(): JSX.Element {
             {watched ? '★ 已自选' : '☆ 自选'}
           </button>
           <button
-            onClick={() => void recap(wl.items)}
+            onClick={() => void doRecap(wl.items)}
             disabled={!ready || wl.items.length === 0 || state.running}
             title="对全部自选股做盘后复盘"
             className="rounded-sm border border-gold/40 px-3 py-1.5 text-xs text-gold transition-colors hover:bg-gold/10 disabled:cursor-not-allowed disabled:border-line disabled:text-faint"
@@ -114,6 +146,13 @@ export default function App(): JSX.Element {
           </button>
         </div>
 
+        <button
+          onClick={() => setHistoryOpen(true)}
+          title="历史复盘 / 分析"
+          className="rounded-sm border border-line px-2.5 py-1.5 text-xs text-muted transition-colors hover:border-line-2 hover:text-text"
+        >
+          🕘 历史
+        </button>
         <SettingsPopover
           settings={auto.settings}
           setEnabled={auto.setEnabled}
@@ -158,6 +197,14 @@ export default function App(): JSX.Element {
         </span>
         <span className="nums ml-auto tracking-wider text-faint">v0.1.0</span>
       </footer>
+
+      <HistoryDrawer
+        open={historyOpen}
+        items={history.items}
+        onClose={() => setHistoryOpen(false)}
+        onRemove={history.remove}
+        onClear={history.clear}
+      />
     </div>
   )
 }

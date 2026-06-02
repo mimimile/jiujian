@@ -39,6 +39,8 @@
 
 - **定时收盘自动复盘 + 通知**：`useAutoRecap`（app 内调度，工作日到设定时间自动触发复盘 + 系统 Notification[开始/完成]，localStorage 持久化设置并防当日重复）。`SettingsPopover`（⚙ 齿轮：开关 + 时间）。注：依赖 app 保持开启。
 
+- **复盘/分析历史留存**：`useHistory`（localStorage 最近 50 条，单股分析 + 复盘自动入史，含标题/时间/正文/成本）+ `HistoryDrawer`（masthead「🕘 历史」→ 右侧抽屉：列表 + 查看 markdown + 删除/清空）。auto-recap 也经包装的 `doRecap` 入史。
+
 ### 记录（重要事实）
 - ⚠️ **2026-06-15 起** `claude -p` / Agent SDK 用量不再计入交互订阅上限，改从独立月度 Agent SDK 额度（Pro $20/Max5x $100/Max20x $200）按 API 价扣费、不滚存。原"蹭免费冗余算力"卖点失效，已重述为"变现订阅自带的月度额度"（见决策 D2/D9）。
 - ⚠️ ToS：官方明禁第三方通过用户 Pro/Max 凭据路由请求（商业/公开场景的红线）；个人非商业自用属"ordinary individual usage"，不触发。
